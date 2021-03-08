@@ -1,0 +1,52 @@
+--------------------------------------------------------------------------------
+| Gherman Maria Irina  ____  ____  _  _   __     ____           324 CB         |
+|                     (_  _)(  __)( \/ ) / _\   (___ \                         |
+|                       )(   ) _) / \/ \/    \   / __/                         |
+|                      (__) (____)\_)(_/\_/\_/  (____)                         |
+|                                                                              |
+--------------------------------------------------------------------------------
+
+    Pentru tema asta, am ales sa imi organizez infrastructura astfel:
+
+    Am un vector de clienti si un vector de topics (care au cel putin un 
+subscriber). In topics, tin minte, pe langa nume, o lista cu pointeri la
+clientii care au dat subscribe si valoarea optiune s&f (pentru fiecare).
+    Mi-am definit structuri pentru orice as fi avut nevoie sa memorez (clienti,
+topics, mesaje)
+    Am considerat cel mai usor sa tin minte per fiecare client ce mesaje trebuie
+trimise odata cu conectarea lui (independente de topic pentru ca topic-ul tine
+doar pointeri la clienti. Smart, eh?)
+
+    Mie mi s-a parut mai usor ca sa tin codul subscriber-ului sumar, iar
+serverul sa faca majoritatea prelucrarii.
+
+    Pentru o functionare cat mai fluida a programului, mi-am facut un handshake
+secret pentru best buddies. Basically, formatul este asta:
+        
+        new <ID>
+        OK.
+
+    De asemenea, functia de handshake din server verifica sa nu fie 2 clienti
+pe server cu acelasi ID, desi, neavand parole, identity theft-ul este inevitabil
+
+    Functii mai importante sunt:
+
+    - subscribe / unsubscribe -> fac update-urile necesare in "baza de date" 
+(aka cei 2 vectori)
+    - extract_msg -> completeaza field-urile structurii mele pt mesaj
+    - forward_stored -> itereaza prin pseudo coada si trimite mesajele
+memorate
+    - main-ul desigur.
+
+    In main, am facut multiplexarea ca in laborator.
+    Cand primesc o conexiune noua TCP, vad daca este client existent sau nou si
+updatez ce trebuie. Daca este client existent, trimit ce mesaje au ramas
+netrimise (de la SF)
+    Cand primesc un mesaj de la UDP, formatez in structura msg si trimit mai
+departe sau pun in coada.
+    Cand primesc mesaj de la TCP, vad daca a inchis conexiunea sau nu. Daca a
+inchis conexiunea, il marchez ca fiind offline. Daca a trimis subscribe / 
+unsubscribe, updatez baza de date.
+    Daca primesc mesaj de la stdin, daca este exit, atunci apelez functia de
+exit.
+
